@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -9,10 +9,10 @@ import {
   LogOut,
   GraduationCap,
 } from "lucide-react";
+import { logoutUser } from "@/actions/logout-user";
 
 export default function SideNav() {
   const pathname = usePathname();
-  const router = useRouter();
 
   const navItems = [
     {
@@ -31,11 +31,6 @@ export default function SideNav() {
       icon: Clock,
     },
   ];
-
-  const handleSignOut = () => {
-    // In a real app, you'd also clear the user's session (e.g., remove a token)
-    router.push("/login");
-  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-72 flex-col overflow-y-auto bg-gray-900 text-gray-200 lg:translate-x-0">
@@ -74,16 +69,34 @@ export default function SideNav() {
         </nav>
       </div>
 
-      {/* FOOTER LOGOUT */}
-      <div className="mt-auto p-6">
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-gray-700 px-4 py-3 font-medium text-gray-300 hover:bg-opacity-80 hover:text-white"
-        >
-          <LogOut className="h-5 w-5" />
-          Sign Out
-        </button>
-      </div>
-    </aside>
-  );
-}
+            {/* FOOTER LOGOUT */}
+
+            <div className="mt-auto p-6">
+
+              <form action={logoutUser}>
+
+                <button
+
+                  type="submit"
+
+                  className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-gray-700 px-4 py-3 font-medium text-gray-300 hover:bg-opacity-80 hover:text-white"
+
+                >
+
+                  <LogOut className="h-5 w-5" />
+
+                  Sign Out
+
+                </button>
+
+              </form>
+
+            </div>
+
+          </aside>
+
+        );
+
+      }
+
+      

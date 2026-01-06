@@ -2,57 +2,139 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { redirect } from 'next/navigation';
+import { SignJWT } from 'jose';
+import { cookies } from 'next/headers';
+
+import { LoginSchema } from '@/lib/validations';
+
+
+
+// Helper function to get the JWT secret key
+
+function getJwtSecretKey(): Uint8Array {
+
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+
+    throw new Error('JWT Secret key is not set in environment variables!');
+
+  }
+
+  return new TextEncoder().encode(secret);
+
+}
+
+
 
 export async function loginUser(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
 
-  if (!email || !password) {
-    // In a real app, you'd return an error to the login page
-    console.error('Email and password are required');
-    redirect('/login?error=MissingFields');
-    return;
+  // 1. Validate form data
+
+  const data = Object.fromEntries(formData.entries());
+
+  const validatedFields = LoginSchema.safeParse(data);
+
+
+
+  if (!validatedFields.success) {
+
+    // Return the first validation error message
+
+    return { success: false, message: validatedFields.error.errors[0].message };
+
   }
 
-  // Find the account by email (which is stored in the 'username' field)
-  const account = await prisma.account.findUnique({
-    where: { username: email },
-  });
+  
 
-  if (!account) {
-    // Account not found
-    console.error('No account found with that email');
-    redirect('/login?error=InvalidCredentials');
-    return;
+  const { email, password } = validatedFields.data;
+
+
+
+  try {
+
+    // 2. Find account and validate password
+
+    const account = await prisma.account.findUnique({
+
+      where: { username: email }, // Email is stored in 'username' field
+
+    });
+
+
+
+    if (!account) {
+
+      return { success: false, message: 'Akun tidak ditemukan.' };
+
+    }
+
+
+
+    const isPasswordValid = await bcrypt.compare(password, account.password);
+
+
+
+    if (!isPasswordValid) {
+
+      return { success: false, message: 'Password salah bro.' };
+
+    }
+
+
+
+    // --- 3. Login Successful, Create Session ---
+
+    const userPayload = {
+
+      accountId: account.id,
+
+      username: account.username, // This is the email
+
+      role: account.role,
+
+    };
+
+    
+
+    const sessionToken = await new SignJWT(userPayload)
+
+      .setProtectedHeader({ alg: 'HS256' })
+
+      .setIssuedAt()
+
+      .setExpirationTime('1h') // Token expires in 1 hour
+
+      .sign(getJwtSecretKey());
+
+
+
+    // Set the session cookie
+
+    cookies().set('session', sessionToken, {
+
+      httpOnly: true,
+
+      secure: process.env.NODE_ENV === 'production',
+
+      maxAge: 60 * 60, // 1 hour
+
+      path: '/',
+
+    });
+
+
+
+    return { success: true, message: 'Login berhasil!', role: account.role };
+
+
+
+  } catch (error) {
+
+    console.error('Login error:', error);
+
+    return { success: false, message: 'Terjadi kesalahan pada server.' };
+
   }
 
-  // Compare the provided password with the stored hash
-  const isPasswordValid = await bcrypt.compare(password, account.password);
-
-  if (!isPasswordValid) {
-    // Passwords do not match
-    console.error('Invalid password');
-    redirect('/login?error=InvalidCredentials');
-    return;
-  }
-
-  // --- Login Successful ---
-  // In a real application, this is where you would create a session,
-  // set a cookie, or generate a JWT.
-  // For now, we will just redirect to the dashboard.
-
-  // Redirect based on role
-  if (account.role === 'Student') {
-    redirect('/student/dashboard');
-  } else if (account.role === 'Faculty') {
-    // Redirect to a faculty dashboard if it exists
-    redirect('/faculty/dashboard');
-  } else if (account.role === 'Admin') {
-    // Redirect to an admin dashboard if it exists
-    redirect('/admin/dashboard');
-  } else {
-    // Fallback redirect
-    redirect('/home');
-  }
 }

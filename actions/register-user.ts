@@ -3,54 +3,63 @@
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
+import { RegisterSchema } from '@/lib/validations';
+import { z } from 'zod';
 
-export async function registerUser(formData: FormData) {
-  const firstName = formData.get('firstName') as string;
-  const lastName = formData.get('lastName') as string;
-  const nim = formData.get('nim') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+// We define a return type for our action for better type-safety
+type RegisterState = {
+  success: boolean;
+  message: string;
+  errors?: z.ZodIssue[];
+};
 
-  if (!firstName || !lastName || !nim || !email || !password) {
-    // In a real app, you'd return a proper error message to the user
-    console.error('All fields are required');
-    return; // Or redirect with error
+export async function registerUser(prevState: any, formData: FormData): Promise<RegisterState> {
+  // Convert formData to a plain object
+  const data = Object.fromEntries(formData.entries());
+
+  // 1. Validate the form data using Zod
+  const validatedFields = RegisterSchema.safeParse(data);
+
+  if (!validatedFields.success) {
+    console.log('Validation errors:', validatedFields.error.flatten().fieldErrors);
+    return {
+      success: false,
+      message: 'Validasi gagal, silakan periksa kembali isian Anda.',
+      errors: validatedFields.error.issues,
+    };
   }
 
-  // Check if account already exists with this email
-  const existingAccount = await prisma.account.findUnique({
-    where: { username: email }, // We are using the 'username' field to store the email
-  });
-
-  if (existingAccount) {
-    // In a real app, you'd return a proper error message
-    console.error('An account with this email already exists');
-    redirect('/register?error=EmailExists');
-    return;
-  }
-  
-  // Also check if a user profile with this NIM already exists to prevent duplicates
-  const existingUser = await prisma.user.findUnique({
-    where: { userID: nim },
-  });
-
-  if (existingUser) {
-    console.error('A user profile with this NIM already exists');
-    redirect('/register?error=NIMExists');
-    return;
-  }
-
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  // Destructure the validated data
+  const { firstName, lastName, nim, email, password } = validatedFields.data;
 
   try {
-    // Create both the User profile and the Account in a transaction
+    // 2. Check if account already exists with this email
+    const existingAccount = await prisma.account.findUnique({
+      where: { username: email }, // Email is stored in 'username' field
+    });
+
+    if (existingAccount) {
+      return { success: false, message: 'Akun dengan email ini sudah terdaftar.' };
+    }
+    
+    // 3. Check if a user profile with this NIM already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { userID: nim },
+    });
+
+    if (existingUser) {
+      return { success: false, message: 'Profil mahasiswa dengan NIM ini sudah ada.' };
+    }
+
+    // 4. Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 5. Create the User profile and Account in a transaction
     await prisma.$transaction([
       prisma.user.create({
         data: {
           userID: nim,
-          userRole: 'Student', // Hardcoded role
+          userRole: 'Student',
           firstName,
           lastName,
           personalEmail: email,
@@ -60,17 +69,17 @@ export async function registerUser(formData: FormData) {
         data: {
           username: email, // Store email in the username field
           password: hashedPassword,
-          role: 'Student', // Hardcoded role
+          role: 'Student',
         },
       }),
     ]);
+
   } catch (error) {
-    console.error('Failed to register user:', error);
-    // Handle error appropriately, maybe redirect with a generic error
-    redirect('/register?error=RegistrationFailed');
-    return;
+    console.error('Gagal mendaftarkan user:', error);
+    return { success: false, message: 'Terjadi kesalahan pada server.' };
   }
 
-  // Redirect to login page on successful registration
-  redirect('/login');
+  // On successful registration, redirect to login page
+  // Note: Redirect should be called outside of try/catch
+  redirect('/login?registered=true');
 }
