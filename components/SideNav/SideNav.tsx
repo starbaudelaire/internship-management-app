@@ -6,51 +6,62 @@ import { usePathname } from "next/navigation";
 export default function SideNav() {
   const pathname = usePathname();
 
-  // Ini menu navigasinya
   const navItems = [
-    { label: "Dashboard", href: "/student/dashboard", icon: "🏠" },
-    { label: "Apply Magang", href: "/student/apply", icon: "📝" },
-    { label: "Status", href: "/student/status", icon: "🔍" },
+    { label: "Dashboard", href: "/student/dashboard", icon: "Squares2X2Icon" }, // Icon nanti bisa diganti SVG
+    {
+      label: "Formulir Magang",
+      href: "/student/apply",
+      icon: "DocumentTextIcon",
+    },
+    {
+      label: "Status Lamaran",
+      href: "/student/status",
+      icon: "ClipboardDocumentCheckIcon",
+    },
   ];
 
   return (
-    <aside className="w-64 bg-white h-screen border-r border-gray-200 flex flex-col fixed left-0 top-0">
-      {/* BAGIAN LOGO */}
-      <div className="p-6 border-b border-gray-100 flex justify-center">
-        {/* Pastiin gambar ini ada di folder public/images/ */}
-        <img
-          src="/images/MAN LOGO.png"
-          alt="Logo Kampus"
-          className="w-32 h-auto object-contain"
-        />
+    <aside className="fixed left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-hidden bg-[#1C2434] duration-300 ease-linear dark:bg-boxdark lg:translate-x-0">
+      {/* HEADER LOGO */}
+      <div className="flex items-center justify-center gap-2 px-6 py-10">
+        <img src="/images/MAN LOGO.png" alt="Logo" className="w-16 h-auto" />
+        <span className="text-2xl font-bold text-white">MAGANG.</span>
       </div>
 
-      {/* BAGIAN MENU */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
+      {/* MENU */}
+      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+        <nav className="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
+          <div>
+            <h3 className="mb-4 ml-4 text-sm font-semibold text-slate-400">
+              MENU
+            </h3>
+            <ul className="mb-6 flex flex-col gap-1.5">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-slate-200 duration-300 ease-in-out hover:bg-slate-700 ${
+                        isActive ? "bg-slate-700 text-white" : ""
+                      }`}
+                    >
+                      {/* Placeholder Icon Bulat */}
+                      <span className="h-5 w-5 bg-current rounded-full opacity-50"></span>
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </nav>
+      </div>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${
-                isActive
-                  ? "bg-black text-white shadow-md"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-black"
-              }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* BAGIAN BAWAH (LOGOUT) */}
-      <div className="p-4 border-t border-gray-100">
-        <button className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition-colors">
-          <span>🚪</span> Logout
+      {/* FOOTER LOGOUT */}
+      <div className="mt-auto p-6">
+        <button className="flex w-full items-center justify-center gap-2 rounded bg-slate-700 p-3 font-medium text-white hover:bg-opacity-90">
+          Sign Out
         </button>
       </div>
     </aside>
