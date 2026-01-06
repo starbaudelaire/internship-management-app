@@ -1,171 +1,58 @@
-import React from "react";
+"use client";
+
 import Link from "next/link";
-import { NWHorizontal2Color, NWTripleStacked2Color } from "assets";
-import styled from "styled-components";
+import { usePathname } from "next/navigation";
 
-import { withStyles } from "@material-ui/core/styles";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
-import ListItemText from "@material-ui/core/ListItemText";
+export default function SideNav() {
+  const pathname = usePathname();
 
-import { ROLES } from "utils";
-import "../../colors.css";
-import "./SideNav.css";
-
-const Divider = styled.hr`
-  width: 85%;
-  opacity: 50%;
-`;
-
-const StyledMenu = withStyles({
-  paper: {
-    border: "1px solid #d3d4d5",
-  },
-})((props) => (
-  <Menu
-    elevation={0}
-    getContentAnchorEl={null}
-    anchorOrigin={{
-      vertical: "bottom",
-      horizontal: "center",
-    }}
-    transformOrigin={{
-      vertical: "top",
-      horizontal: "center",
-    }}
-    {...props}
-  />
-));
-
-const StyledMenuItem = withStyles(() => ({
-  root: {
-    "&:focus": {
-      backgroundColor: "lightgray",
-      "& .MuiListItemIcon-root, & .MuiListItemText-primary": {
-        color: "black",
-      },
-    },
-  },
-}))(MenuItem);
-
-export function SideNav({
-  role,
-  closeSideNav,
-  openSideNav,
-  anchorEl,
-  down,
-  navOpen,
-  showAppForm,
-  showApplicationTable,
-}) {
-  /* 
-    DEPRECATED functions and state for handling click for styled drop down 
-    */
-  /* const [anchorEl, setAnchorEl] = useState(null);
-    const [down, setDown] = useState(false)
-    const handleClick = (e) => {
-        setDown(!down)
-        setAnchorEl(e.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-        setDown(!down)
-    }; */
+  // Ini menu navigasinya
+  const navItems = [
+    { label: "Dashboard", href: "/student/dashboard", icon: "🏠" },
+    { label: "Apply Magang", href: "/student/apply", icon: "📝" },
+    { label: "Status", href: "/student/status", icon: "🔍" },
+  ];
 
   return (
-    <div className="container">
-      <div className="sidenav" style={{ left: navOpen }}>
-        <div className="sidenav__logo">
-          <img src={NWHorizontal2Color} alt="NW_Horizontal_2Color" />
-        </div>
-        <Divider />
-        <div className="sidenav__popup">
-          {role !== ROLES.STUDENT && (
-            <>
-              <p className="sidenav__p__click" onClick={showApplicationTable}>
-                <i className="fas fa-tachometer-alt" /> Show Dashboard
-              </p>
-              <p className="sidenav__p__click" onClick={showAppForm}>
-                <i className="fas fa-plus-square" /> New Application
-              </p>
-              <Divider />
-            </>
-          )}
-          {role === ROLES.STUDENT && (
-            <>
-              <p className="sidenav__p__click" onClick={showAppForm}>
-                <i className="fas fa-plus-square" /> New Application
-              </p>
-              <p className="sidenav__p__click" onClick={showApplicationTable}>
-                <i className="fas fa-folder-open" /> Check Status
-              </p>
-            </>
-          )}
-        </div>
-        {/*
-                DEPRECATED dropdown as show in the system-doc for reports 
-                <div>
-                    <StyledMenu
-                        id="customized-menu"
-                        anchorEl={anchorEl}
-                        keepMounted
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}
-                    >
-                        <StyledMenuItem>
-                            <ListItemText primary="Summary Report" />
-                        </StyledMenuItem>
-                        <StyledMenuItem>
-                            <ListItemText primary="Location Report" />
-                        </StyledMenuItem>
-                        <StyledMenuItem>
-                            <ListItemText primary="Major Report" />
-                        </StyledMenuItem>
-                    </StyledMenu>
-                </div> */}
-
-        <div className="sidenav__btn">
-          <button onClick={closeSideNav}>
-            <i className="fas fa-chevron-left" />
-          </button>
-        </div>
+    <aside className="w-64 bg-white h-screen border-r border-gray-200 flex flex-col fixed left-0 top-0">
+      {/* BAGIAN LOGO */}
+      <div className="p-6 border-b border-gray-100 flex justify-center">
+        {/* Pastiin gambar ini ada di folder public/images/ */}
+        <img
+          src="/images/MAN LOGO.png"
+          alt="Logo Kampus"
+          className="w-32 h-auto object-contain"
+        />
       </div>
-      {navOpen >= "-15%" && (
-        <div className="sidenav__collapsed">
-          <div className="sidenav__collapsed__logo">
-            <img src={NWTripleStacked2Color} alt="NW_Horizontal_2Color" />
-          </div>
-          <div className="sidenav__collapsed__icon">
-            {role !== ROLES.STUDENT && (
-              <>
-                <p className="sidenav__p__click" onClick={showApplicationTable}>
-                  <i className="fas fa-tachometer-alt" />
-                </p>
-                <p className="sidenav__p__click" onClick={showAppForm}>
-                  <i className="fas fa-plus-square" />
-                </p>
-                <Divider />
-              </>
-            )}
-            {role === ROLES.STUDENT && (
-              <>
-                <p className="sidenav__p__click" onClick={showAppForm}>
-                  <i className="fas fa-plus-square" />
-                </p>
-                <p className="sidenav__p__click" onClick={showApplicationTable}>
-                  <i className="fas fa-folder-open" />
-                </p>
-              </>
-            )}
-          </div>
-          <div className="sidenav__btn">
-            <button onClick={openSideNav}>
-              <i className="fas fa-chevron-right" />
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+
+      {/* BAGIAN MENU */}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${
+                isActive
+                  ? "bg-black text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-black"
+              }`}
+            >
+              <span className="text-xl">{item.icon}</span>
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* BAGIAN BAWAH (LOGOUT) */}
+      <div className="p-4 border-t border-gray-100">
+        <button className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition-colors">
+          <span>🚪</span> Logout
+        </button>
+      </div>
+    </aside>
   );
 }
