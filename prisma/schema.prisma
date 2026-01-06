@@ -1,0 +1,68 @@
+// prisma/schema.prisma 
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // atau postgresql kalo lo mau deploy ke vercel
+  url      = env("DATABASE_URL")
+}
+
+// Ini pengganti tabel 'accounts' buat login
+model Account {
+  id       Int    @id @default(autoincrement())
+  username String @unique @db.VarChar(50)
+  password String @db.VarChar(255)
+  role     String @db.VarChar(10) // 'Admin', 'Faculty', 'Student'
+}
+
+// Ini pengganti tabel 'Users' (Data diri mahasiswa/dosen)
+model User {
+  userID         String  @id @db.VarChar(25) // S528544 atau NIP dosen
+  userRole       String  @db.VarChar(25)
+  lastName       String  @db.VarChar(25)
+  firstName      String  @db.VarChar(25)
+  personalEmail  String  @db.VarChar(50) // Gedein dikit dari 25 char
+  studentAddress String? @db.VarChar(255)
+  phone          String? @db.VarChar(25)
+  major          String? @db.VarChar(25)
+
+  // Relasi ke Applications
+  applicationsAsStudent Application[] @relation("StudentApps")
+  applicationsAsFaculty Application[] @relation("FacultyApps")
+}
+
+// Ini pengganti tabel 'Internship' (Tempat Magang)
+model Internship {
+  internshipID    Int      @id @default(autoincrement())
+  employerName    String?  @db.VarChar(25)
+  pointOfContact  String?  @db.VarChar(25)
+  employerEmail   String?  @db.VarChar(50)
+  employerPhone   String?  @db.VarChar(25)
+  employerAddress String?  @db.VarChar(255)
+  startDate       DateTime? @db.Date
+  endDate         DateTime? @db.Date
+
+  applications Application[]
+}
+
+// Ini pengganti tabel 'Applications' (Formulir Pendaftaran)
+model Application {
+  applicationID     Int      @id @default(autoincrement())
+  status            String   @default("Pending") @db.VarChar(25)
+  applicationDate   DateTime @default(now())
+  
+  // Relasi (Foreign Keys)
+  internID          Int
+  internship        Internship @relation(fields: [internID], references: [internshipID])
+  
+  stuID             String
+  student           User       @relation("StudentApps", fields: [stuID], references: [userID])
+  
+  facID             String
+  faculty           User       @relation("FacultyApps", fields: [facID], references: [userID])
+
+  signature         String?    @db.VarChar(50)
+  agreementDate     String?    @db.VarChar(20)
+  comments          String?    @db.VarChar(255)
+}
