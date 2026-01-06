@@ -1,0 +1,123 @@
+.container {
+    height: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+}
+
+.sidenav {
+    height: 100%;
+    width: 20%;
+    position: fixed;
+    z-index: 1;
+    top: -10px;
+    background-color: var(--green);
+    transition: .75s ease;
+    overflow-x: hidden;
+    padding-top: 20px;
+    align-items: center;
+}
+
+.sidenav__collapsed {
+    height: 100%;
+    width: 3.5%;
+    background-color: var(--green);
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidenav__collapsed__logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidenav__collapsed img {
+    width: 90%;
+    padding-top: 10px;
+ }
+
+.sidenav__collapsed__icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 2rem;
+    width: 100%;
+}
+
+.sidenav__link {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    width: 100%;
+    font-size: 1.2rem;
+}
+
+.sidenav__popup {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    width: 100%;
+    font-size: 1.2rem;
+
+}
+
+.sidenav__logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.sidenav a, .sidenav__collapsed a {
+    color: var(--primary-text-color);
+    text-decoration: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.sidenav__p__click {
+    color: var(--primary-text-color);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.sidenav img {
+    width: 90%;
+    padding-bottom: 10px;
+    align-items: center;
+}
+
+.sidenav__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-top: 150px;
+}
+
+.sidenav__btn button {
+    height: 40px;
+    width: 40px;
+    background: var(--sidenav-btn-bg);
+    border-radius: 20px;
+    border: 1px solid var(--sidenav-btn-bg);
+    color: white;
+    cursor: pointer;
+}
+
+.left {
+    padding-left: 55%;
+}
+
+@media (max-width: 1024px) {
+    .sidenav {
+        display: none;
+    }
+    .sidenav__collapsed {
+        display: none;
+    }
+}
